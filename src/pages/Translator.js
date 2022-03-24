@@ -1,64 +1,119 @@
-import React, { useState } from "react"
-import CustomInput from "../components/CustomInput"
-import CustomOutput from "../components/CustomOutput"
-import CustomButton from "../components/CustomButton"
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable jsx-a11y/control-has-associated-label */
+import React, { useState, useEffect, useCallback } from "react"
+import { faXmark, faMicrophone } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import CustomArea from "../components/CustomArea/CustomArea"
+import CustomButton from "../components/CustomButton/CustomButton"
+import CustomTable from "../components/CustomTable/CustomTable"
+import CustomSelectBox from "../components/CustomSelectBox/CustomSelectBox"
+import getLanguages from "../services/language"
+import { stopRecordingProcess, recordVoice } from "../helpers/speechToText/speechToText"
+import { translate } from "../helpers/translate/translate"
+
+const columns = [
+    {
+        Header: "Input Language",
+        accessor: "inputLanguage",
+    },
+    {
+        Header: "Output Language",
+        accessor: "outputLanguage",
+    },
+    {
+        Header: "Text",
+        accessor: "inputText",
+    },
+    {
+        Header: "Translation",
+        accessor: "outputText",
+    },
+]
 
 function Translator() {
     const [textToTranslate, setTextToTranslate] = useState("")
     const [translatedOutput, setTranslatedOutput] = useState("")
+    const [isRecording, setIsRecording] = useState(false)
+    const [inputLanguage, setInputLanguage] = useState("")
+    const [outputLanguage, setOutputLanguage] = useState("")
+    const [languages, setLanguages] = useState([])
+    const [translationHistory, setTranslationHistory] = useState([])
 
-    const translate = async (text = textToTranslate) => {
-        const res = await fetch("https://libretranslate.de/translate", {
-            method: "POST",
-            body: JSON.stringify({
-                q: text,
-                source: "en",
-                target: "tr",
-                format: "text",
-            }),
-            headers: { "Content-Type": "application/json" },
-        })
-
-        const translatedObject = await res.json()
-        setTranslatedOutput(translatedObject.translatedText)
+    const clearIO = () => {
+        setTextToTranslate("")
+        setTranslatedOutput("")
     }
 
-    const recordVoice = () => {
-        // eslint-disable-next-line no-undef
-        const SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition
-
-        const recognition = new SpeechRecognition()
-
-        recognition.continuous = true
-        recognition.lang = "en-US"
-        recognition.interimResults = false
-        recognition.maxAlternatives = 1
-
-        recognition.start()
-
-        recognition.onresult = event => {
-            const voiceInput = event.results[0][0].transcript
-            setTextToTranslate(voiceInput)
-            translate(voiceInput)
-        }
-
-        recognition.onnomatch = event => {
-            console.log("no match", event)
-        }
-
-        recognition.onerror = event => {
-            console.log("error: ", event.error)
+    const handleSelectLanguages = (isInput, event) => {
+        if (isInput) {
+            setInputLanguage(event.target.value)
+        } else {
+            setOutputLanguage(event.target.value)
         }
     }
+
+    const cachedTranslate = useCallback(() => {
+        translate(setTranslatedOutput, inputLanguage, outputLanguage, textToTranslate, setTranslationHistory)
+    }, [setTranslatedOutput, inputLanguage, outputLanguage, textToTranslate, setTranslationHistory])
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (textToTranslate && inputLanguage && outputLanguage) cachedTranslate()
+        }, 1500)
+
+        return () => clearTimeout(timer)
+    }, [inputLanguage, outputLanguage, textToTranslate, cachedTranslate])
+
+    useEffect(() => {
+        setLanguages(getLanguages())
+
+        const history = JSON.parse(localStorage.getItem("history"))
+        setTranslationHistory(history || [])
+    }, [])
 
     return (
-        <div className="App">
-            <header className="App-header">
-                <CustomInput id="translate-input" name="translate-input" rows="4" cols="40" onChange={e => setTextToTranslate(e.target.value)} value={textToTranslate} />
-                <CustomOutput id="translate-output" name="translate-output" rows="4" cols="40" value={translatedOutput} />
-                <CustomButton title="Record" onClick={() => recordVoice()} id="record-button" name="record-button" />
-                <CustomButton title="Translate" onClick={() => translate()} id="translate-button" name="translate-button" />
-            </header>
+        <div className="container">
+            <div className="io-container">
+                <CustomArea
+                    type="Input"
+                    id="translate-input"
+                    name="translate-input"
+                    rows="4"
+                    cols="40"
+                    onChange={e => setTextToTranslate(e.target.value)}
+                    value={textToTranslate}
+                    controls={
+                        <div className="controls-container">
+                            <div className="buttons-container">
+                                <CustomButton onClick={() => clearIO()} id="record-button" name="record-button" className="control-button" icon={<FontAwesomeIcon className="input-control" icon={faXmark} />} />
+                                <CustomButton
+                                    onClick={() => recordVoice(setIsRecording, true, inputLanguage, 1, false, setTextToTranslate, stopRecordingProcess)}
+                                    id="record-button"
+                                    name="record-button"
+                                    className={isRecording ? "control-button recording" : "control-button"}
+                                    icon={<FontAwesomeIcon className="input-control" icon={faMicrophone} />}
+                                />
+                            </div>
+                            <CustomSelectBox onChange={e => handleSelectLanguages(true, e)} id="select-input-language" name="select-input-language" value={inputLanguage} options={languages} />
+                        </div>
+                    }
+                />
+                <CustomArea
+                    type="Output"
+                    id="translate-output"
+                    name="translate-output"
+                    rows="4"
+                    cols="40"
+                    disabled
+                    value={translatedOutput}
+                    controls={
+                        <div className="controls-container">
+                            <CustomSelectBox onChange={e => handleSelectLanguages(false, e)} id="select-output-language" name="select-output-language" value={outputLanguage} options={languages} />
+                        </div>
+                    }
+                />
+            </div>
+            <CustomTable id="translation-history-table" name="translation-history-table" columns={columns} data={translationHistory} title="Translation History" />
         </div>
     )
 }
