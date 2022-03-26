@@ -1,3 +1,5 @@
+$structure-color: #1e3d59;
+
 .table-title {
     text-align: center;
     color: #fff;
@@ -5,18 +7,18 @@
 
 .table {
     margin: auto;
-    border: solid 1px #1e3d59;
+    border: solid 1px $structure-color;
 }
 
 .table-header {
     background: #ff6e40;
-    color: #1e3d59;
+    color: $structure-color;
     padding: 5px 10px;
 }
 
 .table-cell {
     padding: 10px;
-    border: solid 1px #1e3d59;
+    border: solid 1px $structure-color;
     background: #ffc13b;
     color: #1e3d59;
     text-align: center;

@@ -22,7 +22,8 @@ CustomButton.propTypes = {
 }
 
 CustomButton.defaultProps = {
-    icon: {},
+    // eslint-disable-next-line react/jsx-no-useless-fragment
+    icon: null,
     type: "button",
     title: "",
 }

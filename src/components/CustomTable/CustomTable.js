@@ -11,7 +11,7 @@ function CustomTable({ id, name, columns, data, title }) {
     const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance
 
     return (
-        <>
+        <div>
             <h3 className="table-title">{title}</h3>
             <table className="table" id={id} name={name} {...getTableProps()}>
                 <thead>
@@ -44,7 +44,7 @@ function CustomTable({ id, name, columns, data, title }) {
                     )}
                 </tbody>
             </table>
-        </>
+        </div>
     )
 }
 

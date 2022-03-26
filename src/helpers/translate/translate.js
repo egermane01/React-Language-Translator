@@ -1,13 +1,8 @@
 /* eslint-disable import/prefer-default-export */
-import { makeServiceCall } from "../../services/wrapper/serviceWrapper"
+import { translateText } from "../../services/translateText"
 
 export const translate = async (setTranslation, inputLanguage, outputLanguage, inputText, saveToHistory) =>
-    makeServiceCall("post", { "Content-Type": "application/json" }, "https://libretranslate.de/translate", {
-        q: inputText,
-        source: inputLanguage,
-        target: outputLanguage,
-        format: "text",
-    })
+    translateText(inputText, inputLanguage, outputLanguage)
         .then(async res => {
             const outputText = res.data.translatedText
             setTranslation(outputText)
@@ -25,4 +20,4 @@ export const translate = async (setTranslation, inputLanguage, outputLanguage, i
             saveToHistory(parsedHistory)
             localStorage.setItem("history", JSON.stringify(parsedHistory))
         })
-        .catch(err => alert(err))
+        .catch(err => alert(err.response.data.error))

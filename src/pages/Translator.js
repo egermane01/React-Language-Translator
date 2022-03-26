@@ -10,6 +10,7 @@ import CustomSelectBox from "../components/CustomSelectBox/CustomSelectBox"
 import getLanguages from "../services/language"
 import { stopRecordingProcess, recordVoice } from "../helpers/speechToText/speechToText"
 import { translate } from "../helpers/translate/translate"
+import "./Translator.scss"
 
 const columns = [
     {
@@ -42,6 +43,11 @@ function Translator() {
     const clearIO = () => {
         setTextToTranslate("")
         setTranslatedOutput("")
+    }
+
+    const clearTable = () => {
+        localStorage.setItem("history", null)
+        setTranslationHistory([])
     }
 
     const handleSelectLanguages = (isInput, event) => {
@@ -87,7 +93,7 @@ function Translator() {
                             <div className="buttons-container">
                                 <CustomButton onClick={() => clearIO()} id="record-button" name="record-button" className="control-button" icon={<FontAwesomeIcon className="input-control" icon={faXmark} />} />
                                 <CustomButton
-                                    onClick={() => recordVoice(setIsRecording, true, inputLanguage, 1, false, setTextToTranslate, stopRecordingProcess)}
+                                    onClick={() => recordVoice(setIsRecording, true, inputLanguage, false, 1, setTextToTranslate, stopRecordingProcess)}
                                     id="record-button"
                                     name="record-button"
                                     className={isRecording ? "control-button recording" : "control-button"}
@@ -113,7 +119,10 @@ function Translator() {
                     }
                 />
             </div>
-            <CustomTable id="translation-history-table" name="translation-history-table" columns={columns} data={translationHistory} title="Translation History" />
+            <div className="table-container">
+                {translationHistory.length > 0 && <CustomButton onClick={() => clearTable()} id="clear-history-button" name="clear-history-button" className="clear-history-button" icon={<FontAwesomeIcon className="input-control" icon={faXmark} />} />}
+                <CustomTable id="translation-history-table" name="translation-history-table" columns={columns} data={translationHistory} title="Translation History" />
+            </div>
         </div>
     )
 }

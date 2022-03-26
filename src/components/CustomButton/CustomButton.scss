@@ -1,14 +1,38 @@
+$default-background-color: #ff6e40;
+$hover-background-color: #ffc13b;
+$structure-color: #1e3d59;
+
 .control-button {
-    background-color: #ff6e40;
-    border: solid 1px #1e3d59;
-    color: #1e3d59;
+    background-color: $default-background-color;
+    border: solid 1px $structure-color;
+    color: $structure-color;
     padding: 0;
     width: min-content;
     :hover {
-        background-color: #ffc13b;
+        background-color: $hover-background-color;
     }
 }
 
 .recording {
-    background-color: #ffc13b;
+    background-color: $hover-background-color;
+}
+
+.clear-history-button {
+    background-color: $default-background-color;
+    border: solid 1px $structure-color;
+    color: $structure-color;
+    padding: 0px;
+    font-weight: 600;
+    font-size: 16px;
+    width: fit-content;
+    margin-left: 70%;
+
+    :hover {
+        background-color: $hover-background-color;
+    }
+}
+
+.input-control {
+    padding: 8px;
+    min-width: 40px;
 }
